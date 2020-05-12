@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Website</title>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-165027443-2"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'UA-165027443-2');
+    </script>
+</head>
+<body>
+    <marquee>
+        Remember the internet of the 90's!?
+        In 1999 Apple stock price reach a <strong>high</strong> of $4.2075!
+        In 2001 Amazon had a stock price <strong>high</strong> of $21.88!
+        In 2010 Tesla had a stock price <strong>high<strong> of $35.47!
+    </marquee>
+    <div style="background-color:moccasin">
+        <h1> My favorite stocks </h1>
+        <ul>
+            <li>Apple</li>
+            <li>Tesla</li>
+            <li>Square</li>
+        </ul>
+        <a href="" id="here" onclick="request">link</a>
+        <div id='container'></div>
+    </div>
+    <script type="text/javascript">
+        var container = document.getElementById("xhr_container");
+        var xhr = new XMLHttpRequest();
+        xhr.onload = function() {
+          container.innerHTML = this.responseText;
+        }
+        xhr.open("GET", "/static/mywebsite.html");
+        xhr.responseType = "text";
+        xhr.send();
+    </script>
+</body>
+</html>
