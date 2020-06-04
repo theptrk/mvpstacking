@@ -1,15 +1,32 @@
 const axios = require('axios');
 const Pool = require('pg').Pool
 
-async function requestWeather(city) {
-  const API_KEY = "9e3f9ebc8da776c7cc6f8f06b80a9203";
-  const url = "http://api.openweathermap.org/data/2.5/weather?" +
-    "&q=" + city +
-    "&appid=" + API_KEY +
-    "&units=imperial";
+async function getWeather(city) {
+  try {
+    var weather = await requestWeather(city);
+    var rows = await saveWeather({ city }, weather);
+    return rows;
+  } catch (err) {
+    throw Error("error: api is down or db is down")
+  }
+}
 
-  var response = await axios.get(url)
-  return response.data
+async function checkDB(city) {
+}
+
+async function requestWeather(city) {
+  try {
+    const API_KEY = "9e3f9ebc8da776c7cc6f8f06b80a9203";
+    const url = "http://api.openweathermap.org/data/2.5/weather?" +
+      "&q=" + city +
+      "&appid=" + API_KEY +
+      "&units=imperial";
+
+    var response = await axios.get(url)
+    return response.data
+  } catch (err) {
+    throw Error("error occurred on api call: maybe you are offline or api is down")
+  }
 }
 
 async function test() {
@@ -26,9 +43,24 @@ const pool = new Pool({
   port: 5432,
 })
 
-async function saveWeather() {
-  // save to pg
-  // return
+async function saveWeather(request_payload, response_payload) {
+  const queryText = `
+    INSERT INTO api_responses 
+      (name, request_payload, response_payload) 
+    VALUES($1, $2, $3) 
+    RETURNING *`;
+  const queryValues = [
+    'openweather', 
+    JSON.stringify(request_payload), 
+    JSON.stringify(response_payload)
+  ];
+  try {
+    let results = await pool.query(queryText, queryValues);
+    let rows = results.rows
+    return rows;
+  } catch (err) {
+    throw Error("Oh no; db down")
+  }
 }
 
 async function testSaveWeather(city, temperature, humidity) {
@@ -42,7 +74,7 @@ async function testSaveWeather(city, temperature, humidity) {
       VALUES($1, $2, $3) 
       RETURNING *`
     const queryValues = [
-      'openweather', 
+      'testing_openweather', 
       `{"city": "${city}"}`, 
       `{"temperature": "${temperature}", "humidity": ${humidity}}`
     ]
@@ -54,22 +86,23 @@ async function testSaveWeather(city, temperature, humidity) {
   }
 }
 
-async function getSavedWeather(city) {
-  try {
-    var results;
+async function getSavedWeather(city, recent=false) {
+    var queryParts = ['SELECT * FROM api_responses'];
     if (city) {
-      let query = `
-      SELECT * FROM api_responses 
-      WHERE lower(request_payload->>'city') = lower('${city}')`
-      results = await pool.query(query)
-    } else {
-      results = await pool.query('SELECT * FROM api_responses')
+      queryParts.push(`WHERE request_payload->>'city' ILIKE '${city}'`)
     }
-    let rows = results.rows
+    if (recent) {
+      queryParts.push(`AND timestamp BETWEEN NOW() - INTERVAL '24 HOURS' AND NOW()`)
+    }
+    var query = queryParts.join(' ');
+    var results = await pool.query(query);
+    var rows = results.rows
     return rows
-  } catch (err) {
-    console.log(err)
-  }
+}
+
+// This is a helper function for printing in the repl
+async function print(promise) {
+  promise.then(x => console.log(x))
 }
 
 
@@ -78,5 +111,7 @@ module.exports = {
   test, 
   saveWeather, 
   testSaveWeather, 
-  getSavedWeather 
+  getSavedWeather,
+  getWeather,
+  print
 }
