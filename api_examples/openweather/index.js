@@ -1,12 +1,12 @@
-var requestWeather = require('./requestWeather').requestWeather;
-
 const express = require('express')
 const app = express()
 const port = 3000
 
+const requestWeather = require('./requestWeather').requestWeather;
+
 app.get('/', async function handleRequest(req, res) {
  try {
-    var city = req.query['city']
+    let city = req.query['city']
     if (city === undefined) {
       return res.send("no city provided")
     }
