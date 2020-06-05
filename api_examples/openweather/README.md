@@ -1,14 +1,15 @@
 # Open Weather
 
-- How to start the server
-```bash
-$ npm install
-$ npm start
-```
-- The postgres database and tables must be created for saving
+## The postgres database and tables must be created for saving
 ```bash
 $ createdb infoapis
 $ psql < createtables.sql
+```
+
+## How to start the server
+```bash
+$ npm install
+$ npm start
 ```
 
 - How to psql your database
@@ -42,6 +43,3 @@ requestWeather.test();
 requestWeather.testSaveWeather();
 requestWeather.getSavedWeather();
 ```
-
-This calls the Open Weather API to get the current weather.
-A postgres database is used to store each request
