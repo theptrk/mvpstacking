@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Open Weather API</title>
+  <style type="text/css">
+    pre {
+      background-color: #f1f1f1;
+      padding: 5px;
+      margin: 5px;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+  <body>
+    <h1>Open Weather API</h1>
+    <form id="weather_form">
+      <input type="text" name="city" id="city" required>
+      <button type="submit">
+        Get Weather
+      </button>
+    </form>
+    <div>
+      <h2 id='temperature'></h2>
+      <div id="output"></div>
+      <div id="full_response" class="json"></div>
+    </div>
+  </body>
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  <script type="text/javascript">
+    const $form = document.getElementById("weather_form")
+    const $city = document.getElementById("city")
+
+    $form.addEventListener("submit", handleFormSubmit);
+
+    var innerHTML = innerHTMLHelper();
+
+    function handleFormSubmit(e) {
+      e.preventDefault();
+
+      var city = $city.value;
+      if (city.length === 0) {
+        return "invalid location input"
+      }
+
+      requestWeather(city)
+    }
+    function requestWeather(city) {
+      const API_KEY = "9e3f9ebc8da776c7cc6f8f06b80a9203";
+      // const url = "http://api.openweathermap.org/data/2.5/weather?" +
+      //   "&q=" + city +
+      //   "&appid=" + API_KEY +
+      //   "&units=imperial";
+      const url = `/weather?city=${city}`
+
+      getJSON(url, renderWeather);
+    }
+    function handleWeather(data) {
+      renderWeather(data)
+    }
+    function renderWeather(data) {
+      var main = data.response.main;
+      var condition = data.response.weather[0];
+      var output = `<span> 
+        Conditions: ${condition.main} -
+        feels like ${main.feels_like}&#176; -
+        humidity ${main.humidity} -
+        high ${main.temp_max}&#176; -
+        low ${main.temp_min}&#176;
+      </span>`
+
+      var iconBase = "http://openweathermap.org/img/wn/";
+      var iconSrc = iconBase + condition.icon + ".png";
+      var icon = `<img src="${iconSrc}"/>`
+      var temperature = `${icon} Temperature: ${main.temp}&#176;`
+
+      innerHTML("output", output)
+      innerHTML("temperature", temperature)
+
+      var json = JSON.stringify(data, null, 2);
+      innerHTML("full_response", `<pre>${json}</pre>`)
+    }
+    function getJSON(url, cb) {
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', url)
+      xhr.onload = function() {
+        cb({
+          status: this.status,
+          response: JSON.parse(this.response)
+        })
+      }
+      xhr.send();
+    }
+    function innerHTMLHelper() {
+      var memo = {} 
+      return function(id, html) {
+        if (!memo[id]) {
+          memo[id] = document.getElementById(id)
+        }
+        memo[id].innerHTML = html
+      }
+    }
+  </script>
+</html>
