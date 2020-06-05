@@ -3,9 +3,11 @@ const Pool = require('pg').Pool
 
 async function getWeather(city) {
   try {
+    console.log('getting weather for ' + city);
     var weather = await requestWeather(city);
-    var rows = await saveWeather({ city }, weather);
-    return rows;
+    console.log('saving weather at ' + weather.main.temp)
+    var savedWeather = await saveToDB({ city }, weather);
+    return savedWeather.response_payload;
   } catch (err) {
     throw Error("error: api is down or db is down")
   }
@@ -40,7 +42,7 @@ const pool = new Pool({
   port: 5432,
 })
 
-async function saveWeather(request_payload, response_payload, name="openweather") {
+async function saveToDB(request_payload, response_payload, name="openweather") {
   const queryText = `
     INSERT INTO api_responses 
       (name, request_payload, response_payload) 
@@ -54,7 +56,7 @@ async function saveWeather(request_payload, response_payload, name="openweather"
   try {
     let results = await pool.query(queryText, queryValues);
     let rows = results.rows
-    return rows;
+    return rows[0];
   } catch (err) {
     throw Error("Oh no; db down")
   }
@@ -64,7 +66,7 @@ async function testSaveWeather(city, temperature, humidity) {
   var city = city || "San Francisco"
   var temperature = temperature || Math.floor(Math.random() * 100)
   var humidity = humidity || Math.floor(Math.random() * 100)
-  return await saveWeather({ city }, { temperature, humidity }, 'testing_saving')
+  return await saveToDB({ city }, { temperature, humidity }, 'testing_saving')
 }
 
 async function getSavedWeather(city, recent=false) {
@@ -89,7 +91,7 @@ async function print(promise) {
 module.exports = { 
   requestWeather, 
   test, 
-  saveWeather, 
+  saveToDB, 
   testSaveWeather, 
   getSavedWeather,
   getWeather,
