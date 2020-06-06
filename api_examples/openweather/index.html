@@ -45,13 +45,7 @@
       requestWeather(city)
     }
     function requestWeather(city) {
-      const API_KEY = "9e3f9ebc8da776c7cc6f8f06b80a9203";
-      // const url = "http://api.openweathermap.org/data/2.5/weather?" +
-      //   "&q=" + city +
-      //   "&appid=" + API_KEY +
-      //   "&units=imperial";
       const url = `/weather?city=${city}`
-
       getJSON(url, renderWeather);
     }
     function handleWeather(data) {
