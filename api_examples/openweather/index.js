@@ -1,7 +1,7 @@
 const path = require('path')
 const express = require('express')
 const app = express()
-const port = 3000
+const port = process.env.PORT || 3000
 
 const getWeather = require('./requestWeather').getWeather;
 
@@ -17,6 +17,8 @@ app.get('/weather', async function (req, res) {
     }
     res.send(await getWeather(city));
   } catch (err) {
+    console.log(err)
+    res.status(500)
     res.send("error occurred")
   }
 })

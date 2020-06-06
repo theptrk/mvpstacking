@@ -1,6 +1,18 @@
 const axios = require('axios');
 const Pool = require('pg').Pool
 
+const pool = process.env.DATABASE_URL
+  ? new Pool({
+    connectionString: process.env.DATABASE_URL
+  })
+  : new Pool({
+    user: null,
+    host: 'localhost',
+    database: 'infoapis',
+    password: null,
+    port: 5432,
+  });
+
 async function getWeather(city) {
   try {
     console.log('getting weather for ' + city);
@@ -33,14 +45,6 @@ async function test() {
   console.log(weather)
   return weather;
 }
-
-const pool = new Pool({
-  user: null,
-  host: 'localhost',
-  database: 'infoapis',
-  password: null,
-  port: 5432,
-})
 
 async function saveToDB(request_payload, response_payload, name="openweather") {
   const queryText = `
